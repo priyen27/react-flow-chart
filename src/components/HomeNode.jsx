@@ -1,4 +1,4 @@
-import { memo, useState, useEffect } from 'react';
+import { memo, useState, useEffect, useRef } from 'react';
 import { Handle, Position } from '@xyflow/react';
 import {
   DndContext,
@@ -7,6 +7,7 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
+  DragOverlay,
 } from '@dnd-kit/core';
 import {
   arrayMove,
@@ -17,6 +18,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { nodes } from '../theme/index';
+import { useTheme } from '../theme/ThemeContext';
 
 const initialSections = [
   { id: 'hero', title: 'Hero' },
@@ -26,25 +28,35 @@ const initialSections = [
   { id: 'footer', title: 'Footer' },
 ];
 
-const SortableItem = memo(({ id, title }) => {
+const SortableItem = memo(({ id, title, isDark }) => {
   const {
     attributes,
     listeners,
     setNodeRef,
     transform,
     transition,
+    isDragging,
   } = useSortable({ id });
 
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
+    opacity: isDragging ? 0.5 : 1,
+    position: 'relative',
+    zIndex: isDragging ? 999 : 0,
+    touchAction: 'none',
+    userSelect: 'none',
   };
 
   return (
     <div
       ref={setNodeRef}
       style={style}
-      className="bg-white p-2 mb-2 rounded shadow-md cursor-move hover:bg-gray-50 transition-colors duration-200"
+      className={`p-2 mb-2 rounded shadow-md transition-colors duration-200 ${
+        isDark 
+          ? 'bg-gray-700 hover:bg-gray-600 text-gray-100' 
+          : 'bg-white hover:bg-gray-50 text-gray-900'
+      }`}
       {...attributes}
       {...listeners}
     >
@@ -55,11 +67,21 @@ const SortableItem = memo(({ id, title }) => {
 
 const HomeNode = ({ data, id }) => {
   const [sections, setSections] = useState(data?.sections || initialSections);
-  
+  const [activeId, setActiveId] = useState(null);
+  const nodeRef = useRef(null);
+  const { isDark } = useTheme();
+  const theme = nodes.home[isDark ? 'dark' : 'light'];
+
+  useEffect(() => {
+    if (data?.sections) {
+      setSections(data.sections);
+    }
+  }, [data?.sections]);
+
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 5,
+        distance: 8,
       },
     }),
     useSensor(KeyboardSensor, {
@@ -67,16 +89,15 @@ const HomeNode = ({ data, id }) => {
     })
   );
 
-  // Update data when sections change
-  useEffect(() => {
-    if (data) {
-      data.sections = sections;
-    }
-  }, [sections, data]);
+  const handleDragStart = (event) => {
+    setActiveId(event.active.id);
+  };
 
   const handleDragEnd = (event) => {
     const { active, over } = event;
-    if (active.id !== over?.id && over) {
+    setActiveId(null);
+
+    if (over && active.id !== over.id) {
       setSections((items) => {
         const oldIndex = items.findIndex((item) => item.id === active.id);
         const newIndex = items.findIndex((item) => item.id === over.id);
@@ -85,42 +106,58 @@ const HomeNode = ({ data, id }) => {
     }
   };
 
-  const handleDragStart = (event) => {
-    const isDraggingSection = sections.some(section => section.id === event.active.id);
-    if (isDraggingSection) {
-      event.stopPropagation();
-    }
+  const handleDragCancel = () => {
+    setActiveId(null);
+  };
+
+  const handleNodeClick = (e) => {
+    e.stopPropagation();
   };
 
   return (
     <div 
-      className={`px-4 py-2 rounded-md border-2 min-w-[200px] ${nodes.home.bg} ${nodes.home.border} ${nodes.home.shadow}`}
-      onPointerDown={(e) => {
-        if (e.target.closest('.sortable-section')) {
-          e.stopPropagation();
-        }
-      }}
+      ref={nodeRef}
+      className={`px-4 py-2 rounded-md border-2 min-w-[200px] ${theme.bg} ${theme.border} ${theme.shadow}`}
+      onClick={handleNodeClick}
     >
       <Handle type="target" position={Position.Top} className="w-16 !bg-blue-500" />
-      <div className="font-bold text-lg mb-2 cursor-move text-blue-900">Home</div>
-      <div className="text-sm text-gray-600 mb-2">Drag to reorder sections:</div>
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCenter}
-        onDragEnd={handleDragEnd}
-        onDragStart={handleDragStart}
-      >
-        <SortableContext
-          items={sections.map((s) => s.id)}
-          strategy={verticalListSortingStrategy}
+      <div className={`font-bold text-lg mb-2 ${theme.text}`}>Home</div>
+      <div className={`text-sm mb-2 ${theme.text} opacity-80`}>Drag to reorder sections:</div>
+      <div className="sortable-container" onClick={(e) => e.stopPropagation()}>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
+          onDragCancel={handleDragCancel}
         >
-          <div className="sortable-section">
-            {sections.map((section) => (
-              <SortableItem key={section.id} {...section} />
-            ))}
-          </div>
-        </SortableContext>
-      </DndContext>
+          <SortableContext
+            items={sections.map(s => s.id)}
+            strategy={verticalListSortingStrategy}
+          >
+            <div className="sortable-section">
+              {sections.map((section) => (
+                <SortableItem 
+                  key={section.id} 
+                  {...section}
+                  isDark={isDark}
+                />
+              ))}
+            </div>
+          </SortableContext>
+          <DragOverlay>
+            {activeId ? (
+              <div className={`p-2 rounded shadow-lg border-2 ${
+                isDark 
+                  ? 'bg-gray-700 border-gray-600 text-gray-100' 
+                  : 'bg-white border-blue-500 text-gray-900'
+              }`}>
+                {sections.find(section => section.id === activeId)?.title}
+              </div>
+            ) : null}
+          </DragOverlay>
+        </DndContext>
+      </div>
       <Handle type="source" position={Position.Bottom} className="w-16 !bg-blue-500" />
     </div>
   );

@@ -27,14 +27,32 @@ export const colors = {
 
 export const nodes = {
   home: {
-    bg: 'bg-gradient-to-br from-blue-50 to-blue-100',
-    border: 'border-blue-200',
-    shadow: 'shadow-lg shadow-blue-100'
+    light: {
+      bg: 'bg-gradient-to-br from-blue-50 to-blue-100',
+      border: 'border-blue-200',
+      shadow: 'shadow-lg shadow-blue-100',
+      text: 'text-gray-900'
+    },
+    dark: {
+      bg: 'bg-gradient-to-br from-gray-800 to-gray-900',
+      border: 'border-gray-700',
+      shadow: 'shadow-lg shadow-gray-900/50',
+      text: 'text-gray-100'
+    }
   },
   child: {
-    bg: 'bg-gradient-to-br from-purple-50 to-purple-100',
-    border: 'border-purple-200',
-    shadow: 'shadow-lg shadow-purple-100'
+    light: {
+      bg: 'bg-gradient-to-br from-purple-50 to-purple-100',
+      border: 'border-purple-200',
+      shadow: 'shadow-lg shadow-purple-100',
+      text: 'text-gray-900'
+    },
+    dark: {
+      bg: 'bg-gradient-to-br from-gray-700 to-gray-800',
+      border: 'border-gray-600',
+      shadow: 'shadow-lg shadow-gray-900/50',
+      text: 'text-gray-100'
+    }
   }
 };
 
@@ -43,7 +61,11 @@ export const buttons = {
   primary: `${colors.primary.default} ${colors.primary.text} hover:${colors.primary.dark}`,
   secondary: `${colors.secondary.default} ${colors.secondary.text} hover:${colors.secondary.dark}`,
   success: `${colors.success.default} ${colors.success.text} hover:${colors.success.dark}`,
-  danger: `${colors.danger.default} ${colors.danger.text} hover:${colors.danger.dark}`
+  danger: `${colors.danger.default} ${colors.danger.text} hover:${colors.danger.dark}`,
+  theme: {
+    light: 'bg-gray-100 text-gray-800 hover:bg-gray-200',
+    dark: 'bg-gray-700 text-gray-200 hover:bg-gray-600'
+  }
 };
 
 export const notifications = {

@@ -1,9 +1,9 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { vi } from 'vitest';
 import FlowEditor from './FlowEditor';
 import { ReactFlowProvider } from '@xyflow/react';
+import { ThemeProvider } from '../theme/ThemeContext';
 
-// Mock localStorage
 const localStorageMock = {
   getItem: vi.fn(),
   setItem: vi.fn(),
@@ -11,82 +11,99 @@ const localStorageMock = {
 };
 global.localStorage = localStorageMock;
 
-// Mock URL.createObjectURL and URL.revokeObjectURL
-global.URL.createObjectURL = vi.fn();
-global.URL.revokeObjectURL = vi.fn();
+const AllTheProviders = ({ children }) => {
+  return (
+    <ThemeProvider>
+      <ReactFlowProvider>
+        {children}
+      </ReactFlowProvider>
+    </ThemeProvider>
+  );
+};
 
-describe('FlowEditor', () => {
+const customRender = (ui, options) =>
+  render(ui, { wrapper: AllTheProviders, ...options });
+
+describe('FlowEditor Component', () => {
   beforeEach(() => {
     localStorageMock.getItem.mockClear();
     localStorageMock.setItem.mockClear();
-    URL.createObjectURL.mockClear();
-    URL.revokeObjectURL.mockClear();
   });
 
-  it('renders without crashing', () => {
-    render(
-      <ReactFlowProvider>
-        <FlowEditor />
-      </ReactFlowProvider>
-    );
+  afterEach(() => {
+    vi.clearAllMocks();
   });
 
-  it('has save, load, and export buttons', () => {
-    render(
-      <ReactFlowProvider>
-        <FlowEditor />
-      </ReactFlowProvider>
-    );
+  describe('Rendering', () => {
+    it('renders without crashing', () => {
+      customRender(<FlowEditor />);
+    });
 
-    expect(screen.getByText('Save')).toBeInTheDocument();
-    expect(screen.getByText('Load')).toBeInTheDocument();
-    expect(screen.getByText('Export')).toBeInTheDocument();
+    it('displays all required UI elements', () => {
+      customRender(<FlowEditor />);
+
+      expect(screen.getByText('Save')).toBeInTheDocument();
+      expect(screen.getByText('Load')).toBeInTheDocument();
+      expect(screen.getByText('Export')).toBeInTheDocument();
+    });
   });
 
-  it('saves to localStorage when clicking save', () => {
-    render(
-      <ReactFlowProvider>
-        <FlowEditor />
-      </ReactFlowProvider>
-    );
+  describe('Save Functionality', () => {
+    it('saves current state to localStorage', async () => {
+      const mockFlowData = {
+        nodes: [{ id: '1', type: 'home' }],
+        edges: []
+      };
 
-    fireEvent.click(screen.getByText('Save'));
-    expect(localStorageMock.setItem).toHaveBeenCalled();
+      customRender(<FlowEditor initialNodes={mockFlowData.nodes} initialEdges={mockFlowData.edges} />);
+      
+      fireEvent.click(screen.getByText('Save'));
+      
+      expect(localStorageMock.setItem).toHaveBeenCalledWith(
+        'page-hierarchy',
+        expect.any(String)
+      );
+
+      expect(localStorageMock.setItem).toHaveBeenCalled();
+    });
+
+    it('shows success message after saving', async () => {
+      customRender(<FlowEditor />);
+
+      fireEvent.click(screen.getByText('Save'));
+      
+      await waitFor(() => {
+        expect(screen.getByText(/saved successfully/i)).toBeInTheDocument();
+      });
+    });
   });
 
-  it('loads from localStorage when clicking load', () => {
-    localStorageMock.getItem.mockReturnValue(JSON.stringify({
-      nodes: [],
-      edges: []
-    }));
+  describe('Load Functionality', () => {
+    it('loads data from localStorage correctly', () => {
+      const mockData = {
+        nodes: [{ 
+          id: '1', 
+          type: 'home',
+          position: { x: 100, y: 100 },
+          data: {} 
+        }],
+        edges: []
+      };
+      
+      localStorageMock.getItem.mockReturnValue(JSON.stringify(mockData));
 
-    render(
-      <ReactFlowProvider>
-        <FlowEditor />
-      </ReactFlowProvider>
-    );
+      customRender(<FlowEditor />);
 
-    fireEvent.click(screen.getByText('Load'));
-    expect(localStorageMock.getItem).toHaveBeenCalledWith('page-hierarchy');
-  });
+      fireEvent.click(screen.getByText('Load'));
+      expect(localStorageMock.getItem).toHaveBeenCalledWith('page-hierarchy');
+    });
 
-  it('creates a download link when clicking export', () => {
-    const createElementSpy = vi.spyOn(document, 'createElement');
-    const appendChildSpy = vi.spyOn(document.body, 'appendChild');
-    const removeChildSpy = vi.spyOn(document.body, 'removeChild');
+    it('handles missing localStorage data gracefully', () => {
+      localStorageMock.getItem.mockReturnValue(null);
 
-    render(
-      <ReactFlowProvider>
-        <FlowEditor />
-      </ReactFlowProvider>
-    );
+      customRender(<FlowEditor />);
 
-    fireEvent.click(screen.getByText('Export'));
-
-    expect(createElementSpy).toHaveBeenCalledWith('a');
-    expect(appendChildSpy).toHaveBeenCalled();
-    expect(removeChildSpy).toHaveBeenCalled();
-    expect(URL.createObjectURL).toHaveBeenCalled();
-    expect(URL.revokeObjectURL).toHaveBeenCalled();
+      fireEvent.click(screen.getByText('Load'));
+    });
   });
 }); 

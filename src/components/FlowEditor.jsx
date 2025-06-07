@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import {
   ReactFlow,
   Background,
@@ -12,86 +12,77 @@ import { getLayoutedElements, getInitialNodes, getInitialEdges } from '../utils/
 import HomeNode from './HomeNode';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { useNotification } from '../hooks/useNotification';
-import { buttons } from '../theme/index';
+import { useTheme } from '../theme/ThemeContext';
+import Button from './common/Button';
 
 const nodeTypes = {
   home: HomeNode,
 };
 
+const updateHomeNodeSections = (nodes, homeSections) => {
+  return nodes.map(node => {
+    if (node.id === 'home') {
+      return {
+        ...node,
+        data: {
+          ...node.data,
+          sections: homeSections
+        }
+      };
+    }
+    return node;
+  });
+};
+
+const getLayoutData = (nodes, edges) => {
+  const homeNode = nodes.find(node => node.id === 'home');
+  return {
+    nodes,
+    edges,
+    homeSections: homeNode?.data?.sections || []
+  };
+};
+
 const FlowEditor = () => {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
-  const [isFirstLoad, setIsFirstLoad] = useState(true);
   const { showNotification, NotificationContainer } = useNotification();
   const [savedLayout, setSavedLayout] = useLocalStorage('page-hierarchy', null);
+  const { isDark, toggleTheme } = useTheme();
 
   useEffect(() => {
-    if (isFirstLoad) {
-      const initialNodes = getInitialNodes();
-      const initialEdges = getInitialEdges();
-      const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(
-        initialNodes,
-        initialEdges
-      );
-      setNodes(layoutedNodes);
-      setEdges(layoutedEdges);
-      setIsFirstLoad(false);
-
-      if (savedLayout) {
-        try {
-          const { nodes: savedNodes, edges: savedEdges, homeSections } = savedLayout;
-          const updatedNodes = savedNodes.map(node => {
-            if (node.id === 'home') {
-              return {
-                ...node,
-                data: {
-                  ...node.data,
-                  sections: homeSections
-                }
-              };
-            }
-            return node;
-          });
-          setNodes(updatedNodes);
-          setEdges(savedEdges);
-        } catch (error) {
-          console.error('Error loading saved layout:', error);
-          showNotification('Error loading saved layout!', 'error');
-        }
-      }
-    }
-  }, [setNodes, setEdges, isFirstLoad, savedLayout, showNotification]);
-
-  const onSave = useCallback(() => {
-    const homeNode = nodes.find(node => node.id === 'home');
-    const dataToSave = {
-      nodes,
-      edges,
-      homeSections: homeNode?.data?.sections || []
-    };
-    setSavedLayout(dataToSave);
-    showNotification('Changes saved successfully!', 'success');
-  }, [nodes, edges, setSavedLayout, showNotification]);
-
-  const onLoad = useCallback(() => {
     try {
       if (savedLayout) {
         const { nodes: savedNodes, edges: savedEdges, homeSections } = savedLayout;
-        
-        const updatedNodes = savedNodes.map(node => {
-          if (node.id === 'home') {
-            return {
-              ...node,
-              data: {
-                ...node.data,
-                sections: homeSections
-              }
-            };
-          }
-          return node;
-        });
+        setNodes(updateHomeNodeSections(savedNodes, homeSections));
+        setEdges(savedEdges);
+      } else {
+        const initialNodes = getInitialNodes();
+        const initialEdges = getInitialEdges();
+        const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(
+          initialNodes,
+          initialEdges
+        );
+        setNodes(layoutedNodes);
+        setEdges(layoutedEdges);
+      }
+    } catch (error) {
+      console.error('Error initializing layout:', error);
+      showNotification('Error initializing layout!', 'error');
+    }
+  }, []);
 
-        setNodes(updatedNodes);
+  const onSave = () => {
+    const layoutData = getLayoutData(nodes, edges);
+    setSavedLayout(layoutData);
+    showNotification('Changes saved successfully!', 'success');
+  };
+
+  const onLoad = () => {
+    try {
+      if (savedLayout) {
+        const { nodes: savedNodes, edges: savedEdges, homeSections } = savedLayout;
+        setNodes(updateHomeNodeSections(savedNodes, homeSections));
         setEdges(savedEdges);
         showNotification('Layout loaded successfully!', 'success');
       } else {
@@ -101,29 +92,34 @@ const FlowEditor = () => {
       console.error('Error loading saved layout:', error);
       showNotification('Error loading saved layout!', 'error');
     }
-  }, [setNodes, setEdges, savedLayout, showNotification]);
+  };
 
-  const onExport = useCallback(() => {
-    const homeNode = nodes.find(node => node.id === 'home');
-    const exportData = {
-      nodes,
-      edges,
-      homeSections: homeNode?.data?.sections || []
-    };
-    const jsonString = JSON.stringify(exportData, null, 2);
+  const onExport = () => {
+    const layoutData = getLayoutData(nodes, edges);
+    const jsonString = JSON.stringify(layoutData, null, 2);
     const blob = new Blob([jsonString], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'page-hierarchy.json';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-    showNotification('Layout exported successfully!', 'success');
-  }, [nodes, edges, showNotification]);
+    let link = null;
+    
+    try {
+      link = document.createElement('a');
+      link.href = url;
+      link.download = 'page-hierarchy.json';
+      document.body.appendChild(link);
+      link.click();
+      showNotification('Layout exported successfully!', 'success');
+    } catch (error) {
+      console.error('Error exporting layout:', error);
+      showNotification('Error exporting layout!', 'error');
+    } finally {
+      URL.revokeObjectURL(url);
+      if (link && link.parentNode) {
+        link.parentNode.removeChild(link);
+      }
+    }
+  };
 
-  const onReset = useCallback(() => {
+  const onReset = () => {
     const initialNodes = getInitialNodes();
     const initialEdges = getInitialEdges();
     const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(
@@ -133,10 +129,10 @@ const FlowEditor = () => {
     setNodes(layoutedNodes);
     setEdges(layoutedEdges);
     showNotification('Layout reset to default!', 'info');
-  }, [setNodes, setEdges, showNotification]);
+  };
 
   return (
-    <div className="w-screen h-screen overflow-hidden relative">
+    <div className={`w-screen h-screen overflow-hidden relative ${isDark ? 'bg-gray-900' : 'bg-gray-50'}`}>
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -144,35 +140,26 @@ const FlowEditor = () => {
         onEdgesChange={onEdgesChange}
         nodeTypes={nodeTypes}
         fitView
-        className="bg-gray-50"
+        className={isDark ? 'bg-gray-900' : 'bg-gray-50'}
       >
         <Background />
         <Controls />
         <Panel position="top-right" className="flex gap-2">
-          <button
-            onClick={onSave}
-            className={`${buttons.base} ${buttons.primary}`}
-          >
+          <Button onClick={toggleTheme} variant="theme" isDark={isDark}>
+            {isDark ? '🌞' : '🌙'}
+          </Button>
+          <Button onClick={onSave} variant="primary">
             Save
-          </button>
-          <button
-            onClick={onLoad}
-            className={`${buttons.base} ${buttons.success}`}
-          >
+          </Button>
+          <Button onClick={onLoad} variant="success">
             Load
-          </button>
-          <button
-            onClick={onExport}
-            className={`${buttons.base} ${buttons.secondary}`}
-          >
+          </Button>
+          <Button onClick={onExport} variant="secondary">
             Export
-          </button>
-          <button
-            onClick={onReset}
-            className={`${buttons.base} ${buttons.danger}`}
-          >
+          </Button>
+          <Button onClick={onReset} variant="danger">
             Reset
-          </button>
+          </Button>
         </Panel>
       </ReactFlow>
       <NotificationContainer />

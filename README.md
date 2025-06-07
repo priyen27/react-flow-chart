@@ -70,10 +70,11 @@ A powerful visual tool for managing and visualizing website page hierarchies. Bu
    - Click and drag sections in the Home node to reorder them
    - Changes are reflected immediately in the UI
 
-3. **Save/Load/Export**
+3. **Save/Load/Export/Reset**
    - Click "Save" to persist the current state to localStorage
    - Click "Load" to restore the last saved state
    - Click "Export" to download the hierarchy as a JSON file
+   - Click "Reset" to reset the layout
 
 ## 🧪 Testing
 
@@ -85,18 +86,4 @@ npm test
 Run tests with coverage:
 ```bash
 npm run test:coverage
-```
-
-## 📁 Project Structure
-
-```
-src/
-├── components/
-│   ├── FlowEditor.jsx     # Main React Flow component
-│   ├── HomeNode.jsx       # Custom node for home page sections
-│   └── FlowEditor.test.jsx # Component tests
-├── utils/
-│   └── layout.js         # Layout utilities using Dagre
-├── App.jsx               # Root component
-└── index.css            # Global styles
 ```
