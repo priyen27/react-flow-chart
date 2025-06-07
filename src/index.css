@@ -1,0 +1,63 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --level-1-color: #e3f2fd;
+  --level-2-color: #bbdefb;
+  --level-3-color: #90caf9;
+}
+
+.light {
+  @apply bg-white shadow-lg rounded-lg border-2 border-gray-200 p-4;
+}
+
+.light[data-level="1"] {
+  background-color: var(--level-1-color);
+}
+
+.light[data-level="2"] {
+  background-color: var(--level-2-color);
+}
+
+.light[data-level="3"] {
+  background-color: var(--level-3-color);
+}
+
+.react-flow__node {
+  min-width: 150px;
+}
+
+.react-flow__handle {
+  width: 8px !important;
+  height: 8px !important;
+  background-color: #64748b !important;
+}
+
+.react-flow__edge-path {
+  stroke: #64748b !important;
+  stroke-width: 2 !important;
+}
+
+.react-flow__node-default {
+  padding: 10px;
+  border-radius: 5px;
+  width: 150px;
+  font-size: 12px;
+  text-align: center;
+  border-width: 2px;
+  border-style: solid;
+}
+
+.react-flow__controls {
+  box-shadow: 0 0 2px 1px rgba(0, 0, 0, 0.08);
+}
+
+.react-flow__controls-button {
+  border: none !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+
+.react-flow__minimap {
+  border-radius: 5px;
+}
