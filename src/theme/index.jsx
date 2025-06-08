@@ -57,11 +57,11 @@ export const nodes = {
 };
 
 export const buttons = {
-  base: 'px-4 py-2 rounded transition-all duration-200 ease-in-out',
-  primary: `${colors.primary.default} ${colors.primary.text} hover:${colors.primary.dark}`,
-  secondary: `${colors.secondary.default} ${colors.secondary.text} hover:${colors.secondary.dark}`,
-  success: `${colors.success.default} ${colors.success.text} hover:${colors.success.dark}`,
-  danger: `${colors.danger.default} ${colors.danger.text} hover:${colors.danger.dark}`,
+  base: 'px-4 py-2 rounded transition-colors duration-200',
+  primary: `${colors.primary.default} ${colors.primary.text} hover:opacity-90`,
+  secondary: `${colors.secondary.default} ${colors.secondary.text} hover:opacity-90`,
+  success: `${colors.success.default} ${colors.success.text} hover:opacity-90`,
+  danger: `${colors.danger.default} ${colors.danger.text} hover:opacity-90`,
   theme: {
     light: 'bg-gray-100 text-gray-800 hover:bg-gray-200',
     dark: 'bg-gray-700 text-gray-200 hover:bg-gray-600'

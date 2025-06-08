@@ -10,6 +10,7 @@ import {
 import '@xyflow/react/dist/style.css';
 import { getLayoutedElements, getInitialNodes, getInitialEdges } from '../utils/layout';
 import HomeNode from './HomeNode';
+import TooltipNode from './common/TooltipNode';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { useNotification } from '../hooks/useNotification';
 import { useTheme } from '../theme/ThemeContext';
@@ -17,6 +18,7 @@ import Button from './common/Button';
 
 const nodeTypes = {
   home: HomeNode,
+  default: TooltipNode,
 };
 
 const updateHomeNodeSections = (nodes, homeSections) => {
