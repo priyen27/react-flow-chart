@@ -32,6 +32,7 @@ export const getLayoutedElements = (nodes, edges) => {
   return { nodes: layoutedNodes, edges };
 };
 
+// it is for default nodes
 export const getInitialNodes = () => [
   {
     id: 'home',
@@ -108,6 +109,7 @@ export const getInitialNodes = () => [
   },
 ];
 
+// it is for default connections
 export const getInitialEdges = () => [
   { id: 'home-about', source: 'home', target: 'about' },
   { id: 'home-services', source: 'home', target: 'services' },
@@ -120,4 +122,4 @@ export const getInitialEdges = () => [
   { id: 'blog-author', source: 'blog', target: 'author-page' },
   { id: 'contact-location', source: 'contact', target: 'location-info' },
   { id: 'contact-support', source: 'contact', target: 'support-page' },
-]; 
+];

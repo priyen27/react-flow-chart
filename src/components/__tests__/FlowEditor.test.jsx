@@ -1,8 +1,8 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { vi } from 'vitest';
-import FlowEditor from './FlowEditor';
+import FlowEditor from '../FlowEditor';
 import { ReactFlowProvider } from '@xyflow/react';
-import { ThemeProvider } from '../theme/ThemeContext';
+import { ThemeProvider } from '../../theme/ThemeContext';
 
 const localStorageMock = {
   getItem: vi.fn(),

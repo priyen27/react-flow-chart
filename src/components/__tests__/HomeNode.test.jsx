@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { vi } from 'vitest';
-import HomeNode from './HomeNode';
-import { ThemeProvider } from '../theme/ThemeContext';
+import HomeNode from '../HomeNode';
+import { ThemeProvider } from '../../theme/ThemeContext';
 import { ReactFlowProvider } from '@xyflow/react';
 
 const AllTheProviders = ({ children }) => {
