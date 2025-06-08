@@ -4,11 +4,16 @@ A powerful visual tool for managing and visualizing website page hierarchies. Bu
 
 ## 🚀 Demo
 
-[Live Demo](deployment-link-here) <!-- TODO: Add your deployment link -->
+[Live Demo]https://priyen-frontend-developer.vercel.app/
 
 ### Video Demo
 
-[![Video Demo](video-thumbnail-url-here)](video-link-here) <!-- TODO: Add your video demo link -->
+
+**UI Walkthrough**  
+  [https://www.loom.com/share/f866a967018e4610808b6966433bcbd0?sid=37382e47-60cc-496f-80e6-dc52b50228ef](https://www.loom.com/share/f866a967018e4610808b6966433bcbd0?sid=37382e47-60cc-496f-80e6-dc52b50228ef)
+
+**Code Structure Overview**  
+  [https://www.loom.com/share/80e9219edb8446a98ef33cf5c7cba0cc?sid=f7d6979c-d8b6-461f-91fc-b035f1324732](https://www.loom.com/share/80e9219edb8446a98ef33cf5c7cba0cc?sid=f7d6979c-d8b6-461f-91fc-b035f1324732)
 
 ## ✨ Features
 
