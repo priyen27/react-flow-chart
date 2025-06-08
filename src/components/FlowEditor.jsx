@@ -125,26 +125,39 @@ const FlowEditor = () => {
 
   const onLoad = () => {
     try {
-      if (savedLayout) {
-        const { nodes: savedNodes, edges: savedEdges, homeSections } = savedLayout;
-        const nodesWithHandlers = updateHomeNodeSections(savedNodes, homeSections).map(node => {
-          if (node.id === 'home') {
-            return {
-              ...node,
-              data: {
-                ...node.data,
-                onChange: ({ sections }) => handleHomeNodeChange(sections)
-              }
-            };
-          }
-          return node;
-        });
-        setNodes(nodesWithHandlers);
-        setEdges(savedEdges);
-        showNotification('Layout loaded successfully!', 'success');
-      } else {
-        showNotification('No saved layout found!', 'info');
+      if (!savedLayout || !savedLayout.nodes || !savedLayout.edges) {
+        showNotification('No saved layout found. Save your changes first!', 'warning');
+        return;
       }
+
+      const { nodes: savedNodes, edges: savedEdges, homeSections } = savedLayout;
+      
+      if (!Array.isArray(savedNodes) || !Array.isArray(savedEdges)) {
+        showNotification('Invalid saved layout format!', 'error');
+        return;
+      }
+
+      const homeNode = savedNodes.find(node => node.id === 'home');
+      if (!homeNode) {
+        showNotification('Invalid layout: Home node missing!', 'error');
+        return;
+      }
+
+      const nodesWithHandlers = updateHomeNodeSections(savedNodes, homeSections).map(node => {
+        if (node.id === 'home') {
+          return {
+            ...node,
+            data: {
+              ...node.data,
+              onChange: ({ sections }) => handleHomeNodeChange(sections)
+            }
+          };
+        }
+        return node;
+      });
+      setNodes(nodesWithHandlers);
+      setEdges(savedEdges);
+      showNotification('Layout loaded successfully!', 'success');
     } catch (error) {
       console.error('Error loading saved layout:', error);
       showNotification('Error loading saved layout!', 'error');
@@ -183,7 +196,19 @@ const FlowEditor = () => {
       initialNodes,
       initialEdges
     );
-    setNodes(layoutedNodes);
+    const nodesWithHandlers = layoutedNodes.map(node => {
+      if (node.id === 'home') {
+        return {
+          ...node,
+          data: {
+            ...node.data,
+            onChange: ({ sections }) => handleHomeNodeChange(sections)
+          }
+        };
+      }
+      return node;
+    });
+    setNodes(nodesWithHandlers);
     setEdges(layoutedEdges);
     showNotification('Layout reset to default!', 'info');
   };

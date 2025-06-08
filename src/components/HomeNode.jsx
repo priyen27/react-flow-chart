@@ -67,11 +67,16 @@ const SortableItem = memo(({ id, title, isDark }) => {
 
 const HomeNode = ({ data, id }) => {
   const [activeId, setActiveId] = useState(null);
+  const [localSections, setLocalSections] = useState(data?.sections || initialSections);
   const nodeRef = useRef(null);
   const { isDark } = useTheme();
   const theme = nodes.home[isDark ? 'dark' : 'light'];
 
-  const sections = data?.sections || initialSections;
+  useEffect(() => {
+    if (data?.sections) {
+      setLocalSections(data.sections);
+    }
+  }, [data?.sections]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -93,10 +98,11 @@ const HomeNode = ({ data, id }) => {
     setActiveId(null);
 
     if (over && active.id !== over.id) {
-      const oldIndex = sections.findIndex((item) => item.id === active.id);
-      const newIndex = sections.findIndex((item) => item.id === over.id);
+      const oldIndex = localSections.findIndex((item) => item.id === active.id);
+      const newIndex = localSections.findIndex((item) => item.id === over.id);
       
-      const newSections = arrayMove([...sections], oldIndex, newIndex);
+      const newSections = arrayMove([...localSections], oldIndex, newIndex);
+      setLocalSections(newSections);
       if (typeof data?.onChange === 'function') {
         data.onChange({ sections: newSections });
       }
@@ -129,11 +135,11 @@ const HomeNode = ({ data, id }) => {
           onDragCancel={handleDragCancel}
         >
           <SortableContext
-            items={sections.map(s => s.id)}
+            items={localSections.map(s => s.id)}
             strategy={verticalListSortingStrategy}
           >
             <div className="sortable-section">
-              {sections.map((section) => (
+              {localSections.map((section) => (
                 <SortableItem 
                   key={section.id} 
                   {...section}
@@ -149,7 +155,7 @@ const HomeNode = ({ data, id }) => {
                   ? 'bg-gray-700 border-gray-600 text-gray-100' 
                   : 'bg-white border-blue-500 text-gray-900'
               }`}>
-                {sections.find(section => section.id === activeId)?.title}
+                {localSections.find(section => section.id === activeId)?.title}
               </div>
             ) : null}
           </DragOverlay>

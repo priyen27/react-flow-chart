@@ -37,9 +37,20 @@ export const getInitialNodes = () => [
   {
     id: 'home',
     type: 'home',
-    data: { label: 'Home' },
+    data: { 
+      label: 'Home',
+      sections: [
+        { id: 'hero', title: 'Hero' },
+        { id: 'features', title: 'Features' },
+        { id: 'testimonials', title: 'Testimonials' },
+        { id: 'cta', title: 'CTA' },
+        { id: 'footer', title: 'Footer' },
+      ],
+      onChange: ({ sections }) => {}
+    },
     position: { x: 0, y: 0 },
     className: 'light',
+    draggable: false
   },
   {
     id: 'about',
