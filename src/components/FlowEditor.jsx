@@ -26,7 +26,8 @@ const updateHomeNodeSections = (nodes, homeSections) => {
         ...node,
         data: {
           ...node.data,
-          sections: homeSections
+          sections: homeSections,
+          onChange: () => {}
         }
       };
     }
@@ -50,11 +51,41 @@ const FlowEditor = () => {
   const [savedLayout, setSavedLayout] = useLocalStorage('page-hierarchy', null);
   const { isDark, toggleTheme } = useTheme();
 
+  const handleHomeNodeChange = (newSections) => {
+    setNodes(nodes => 
+      nodes.map(node => {
+        if (node.id === 'home') {
+          return {
+            ...node,
+            data: {
+              ...node.data,
+              sections: newSections,
+              onChange: ({ sections }) => handleHomeNodeChange(sections)
+            }
+          };
+        }
+        return node;
+      })
+    );
+  };
+
   useEffect(() => {
     try {
       if (savedLayout) {
         const { nodes: savedNodes, edges: savedEdges, homeSections } = savedLayout;
-        setNodes(updateHomeNodeSections(savedNodes, homeSections));
+        const nodesWithHandlers = updateHomeNodeSections(savedNodes, homeSections).map(node => {
+          if (node.id === 'home') {
+            return {
+              ...node,
+              data: {
+                ...node.data,
+                onChange: ({ sections }) => handleHomeNodeChange(sections)
+              }
+            };
+          }
+          return node;
+        });
+        setNodes(nodesWithHandlers);
         setEdges(savedEdges);
       } else {
         const initialNodes = getInitialNodes();
@@ -63,7 +94,19 @@ const FlowEditor = () => {
           initialNodes,
           initialEdges
         );
-        setNodes(layoutedNodes);
+        const nodesWithHandlers = layoutedNodes.map(node => {
+          if (node.id === 'home') {
+            return {
+              ...node,
+              data: {
+                ...node.data,
+                onChange: ({ sections }) => handleHomeNodeChange(sections)
+              }
+            };
+          }
+          return node;
+        });
+        setNodes(nodesWithHandlers);
         setEdges(layoutedEdges);
       }
     } catch (error) {
@@ -82,7 +125,19 @@ const FlowEditor = () => {
     try {
       if (savedLayout) {
         const { nodes: savedNodes, edges: savedEdges, homeSections } = savedLayout;
-        setNodes(updateHomeNodeSections(savedNodes, homeSections));
+        const nodesWithHandlers = updateHomeNodeSections(savedNodes, homeSections).map(node => {
+          if (node.id === 'home') {
+            return {
+              ...node,
+              data: {
+                ...node.data,
+                onChange: ({ sections }) => handleHomeNodeChange(sections)
+              }
+            };
+          }
+          return node;
+        });
+        setNodes(nodesWithHandlers);
         setEdges(savedEdges);
         showNotification('Layout loaded successfully!', 'success');
       } else {

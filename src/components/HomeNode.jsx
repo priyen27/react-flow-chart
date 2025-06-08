@@ -66,17 +66,12 @@ const SortableItem = memo(({ id, title, isDark }) => {
 });
 
 const HomeNode = ({ data, id }) => {
-  const [sections, setSections] = useState(data?.sections || initialSections);
   const [activeId, setActiveId] = useState(null);
   const nodeRef = useRef(null);
   const { isDark } = useTheme();
   const theme = nodes.home[isDark ? 'dark' : 'light'];
 
-  useEffect(() => {
-    if (data?.sections) {
-      setSections(data.sections);
-    }
-  }, [data?.sections]);
+  const sections = data?.sections || initialSections;
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -98,11 +93,13 @@ const HomeNode = ({ data, id }) => {
     setActiveId(null);
 
     if (over && active.id !== over.id) {
-      setSections((items) => {
-        const oldIndex = items.findIndex((item) => item.id === active.id);
-        const newIndex = items.findIndex((item) => item.id === over.id);
-        return arrayMove(items, oldIndex, newIndex);
-      });
+      const oldIndex = sections.findIndex((item) => item.id === active.id);
+      const newIndex = sections.findIndex((item) => item.id === over.id);
+      
+      const newSections = arrayMove([...sections], oldIndex, newIndex);
+      if (typeof data?.onChange === 'function') {
+        data.onChange({ sections: newSections });
+      }
     }
   };
 
