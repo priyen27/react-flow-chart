@@ -49,8 +49,7 @@ export const getInitialNodes = () => [
       onChange: ({ sections }) => {}
     },
     position: { x: 0, y: 0 },
-    className: 'light',
-    draggable: false
+    className: 'light'
   },
   {
     id: 'about',
