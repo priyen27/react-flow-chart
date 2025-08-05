@@ -4,7 +4,7 @@ A powerful visual tool for managing and visualizing website page hierarchies. Bu
 
 ## 🚀 Demo
 
-[Live Demo]https://priyen-frontend-developer.vercel.app/
+[Live Demo]https://react-page-hierarchy.vercel.app/
 
 ### Video Demo
 
